@@ -22,6 +22,9 @@ import {ethers} from "ethers"
 import poolabi from "@/sc/stylus/poolabi";
 
 const WinningPage = () => {
+  let testbool = false;
+  let testAddress = " ";
+  let NEW_CONTRACT_TRIVIA = null;
   const router = useRouter();
   const account = useActiveAccount();
   const [amount, setAmount] = useState(null);
@@ -34,10 +37,10 @@ const WinningPage = () => {
   const [isChecking, setIsChecking] = useState(false);
   const [pendingButtonTrnx, setPendingButtonTrnx] = useState(false);
   const [rewardStatus, setRewardStatus] = useState("initial");
-  let newContractTriviaBase = null;
-  let successTrnx,balNum = null;
+  const [balNum, setBalNum] = useState(0);
   const [quizCode, setQuizCode] = useState(null);
   const [privateKey, setPrivateKey] = useState(null);
+  const [approvalStatus, setApprovalStatus] = useState("");
 
   useEffect(() => {
     const fetchQuizCode = async () => {
@@ -82,6 +85,7 @@ const WinningPage = () => {
   };
   const approveToken = async () => {
     setPendingButtonTrnx(true);
+    setApprovalStatus("waiting for approval...");
     try {
       const provider = new ethers.providers.Web3Provider(window.ethereum);
       const signer = provider.getSigner();
@@ -91,9 +95,11 @@ const WinningPage = () => {
       const approveTx = await tokenContract.approve(TRIVIA_BASE_POOL, approvalAmount);
       
       await approveTx.wait();
+      setApprovalStatus("Token approved successfully!");
       return true;
     } catch (error) {
       setPendingButtonTrnx(false);
+      setApprovalStatus("Token approval failed!");
       console.error("Error in token approval:", error);
       return false;
     }
@@ -101,6 +107,7 @@ const WinningPage = () => {
   
   const depositToPool = async () => {
     setPendingButtonTrnx(true);
+    setApprovalStatus("waiting to transfer...");
       try {
         const provider = new ethers.providers.Web3Provider(window.ethereum);
         const signer = provider.getSigner();
@@ -109,11 +116,15 @@ const WinningPage = () => {
         const depositTx = await poolContract.deposit(depositAmount);
         await depositTx.wait();
         setIsDepositSuccessful(true);
+        testbool = true;
+        setApprovalStatus("Transfer successful!");
+        console.log("Deposit successful ", isDepositSuccessful);
         return true;
       } catch (error) {
         console.error("Error in pool deposit:", error);
         setIsDepositSuccessful(false);
         setPendingButtonTrnx(true);
+        setApprovalStatus("Transfer failed!");
         return false;
       }
     };
@@ -123,132 +134,71 @@ const WinningPage = () => {
   await approveToken();
   await depositToPool();
 
-  let NEW_CONTRACT_TRIVIA;
-  if (isDepositSuccessful) {
+  if (testbool) {
+    console.log("Deposit successful rrght", testbool);
     const provider = new ethers.providers.Web3Provider(window.ethereum);
     const signer = await provider.getSigner();
-    NEW_CONTRACT_TRIVIA = await signer.getAddress();
-    console.log(`admin confirm transaction sender address ${NEW_CONTRACT_TRIVIA}`);
-  }
- 
+    const address = await signer.getAddress();
+    testAddress = address;
+    NEW_CONTRACT_TRIVIA = address;
+    console.log(`admin confirm transaction sender address ${address}`);
+  } 
 
-
-  const transferConfirm = async (contractAddress) => {
-      const provider = window.ethereum;
-      const web3 = new Web3(provider);
-      //check contract just created
-      const url = "https://sepolia.arbiscan.io/address/";
-      console.log(`${url}${contractAddress}`);
-      const contract = new web3.eth.Contract(tokenabi, MockUSDC);
-
+   const BalanceCheck = async (contractAddress) => {
+      console.log("balance check in logic: ", contractAddress);
+      console.log("Deposit successful rrght 2", testbool);
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const contract = new ethers.Contract(TRIVIA_BASE_POOL, poolabi, provider);
       try {
-        const accounts = await provider.request({
-          method: "eth_requestAccounts",
-        });
-        const accountAddress = accounts[0];
-        const gasEstimate = await contract.methods
-          .transfer(contractAddress, _amount * dec)
-          .estimateGas({ from: accountAddress });
-
-        await contract.methods
-          .transfer(contractAddress, _amount * dec)
-          .send({
-            from: accountAddress,
-            //@ts-ignore
-            gas: gasEstimate,
-            //@ts-ignore
-            gasPrice: await web3.eth.getGasPrice(),
-          })
-          .then(() => {
-            //successTrnx = true;
-          })
-          .catch((e) => {
-            //successTrnx = false;
-            console.error(e);
-          });
+        const balance = await contract.getDeposit(contractAddress);
+        let bal = Number(balance) / dec;
+        setBalNum(bal);
+        console.log("main function check balance: ", bal);
+        return bal;
       } catch (e) {
-        console.error(`Error estimating gas or sending transaction: ${e}`);
+        setBalNum(0);
+        console.log("fail to fetch contract balc: ", e);
+        return 0;
       }
     };
+    const balance = await BalanceCheck(testAddress);
 
-    const BalanceCheck = async (contractAddress) => {
-      const web3 = new Web3(provider);
-      console.log("test");
-      const contract = new web3.eth.Contract(TriviaABI, contractAddress);
-      await contract.methods
-        .ReturnContractBalnc()
-        .call()
-        .then((r) => {
-          balNum = Number(r) / dec;
-        })
-        .catch((e) => {
-          console.log("fail to fetch contract balc: ", e);
-        });
-    };
-
-    if (NEW_CONTRACT_TRIVIA) {
+    if (balance >= 1) {
       setIsChecking(true);
-      await transferConfirm(NEW_CONTRACT_TRIVIA);
-      await BalanceCheck(NEW_CONTRACT_TRIVIA);
 
-      // checks if the contract balance
-      // is above zero.
-      if (balNum >= 1) {
-        //@ts-ignore
-        setRewardStatus("success");
-        setPendingButtonTrnx(false);
-        setIsChecking(false);
+      setRewardStatus("success");
+      setPendingButtonTrnx(false);
+      setIsChecking(false);
 
-        // better fetching balance than
-        // a boolean change after a transaction
+      const paymentDetails = {
+        quizCode,
+        timestamp: new Date().toISOString(),
+        transactionDetails: {
+          from: account.address,
+          to: NEW_CONTRACT_TRIVIA,
+          amount: _amount,
+          token: "USDC",
+          chainId: 84532,
+          network: "Base Sepolia",
+        },
+        status: "completed",
+      };
 
-        const paymentDetails = {
-          quizCode,
-          timestamp: new Date().toISOString(),
-          transactionDetails: {
-            from: account.address,
-            to: NEW_CONTRACT_TRIVIA,
-            amount: _amount,
-            token: "USDC",
-            chainId: 84532,
-            network: "Base Sepolia",
-          },
-          status: "completed",
-        };
+      const quizRef = ref(database, `quiz_staking/${quizCode}`);
+      const quizcontractRef = ref(
+        database,
+        `paid_quizzes/${quizCode}/smartContract`
+      );
 
-        /* const paymentDetails = {
-          quizCode,
-          timestamp: new Date().toISOString(),
-          transactionDetails: {
-            from: account.address,
-            to: newContractTriviaBase,
-            amount: _amount,
-            token: "USDC",
-            chainId: 8453,
-            network: "Base",
-          },
-          status: "completed",
-        }; */
+      await firebaseUpdate(quizRef, paymentDetails);
+      await firebaseUpdate(quizcontractRef, paymentDetails);
 
-        const quizRef = ref(database, `quiz_staking/${quizCode}`);
-        const quizcontractRef = ref(
-          database,
-          `paid_quizzes/${quizCode}/smartContract`
-        );
-
-        await firebaseUpdate(quizRef, paymentDetails);
-        await firebaseUpdate(quizcontractRef, paymentDetails);
-
-        console.log("Payment details logged:", paymentDetails);
-        setIsChecking(false);
-        router.push(`./paid_quizcode`);
-      } else {
-        setRewardStatus("failed");
-        console.log("didn't pass the sucess trnx");
-      }
+      console.log("Payment details logged:", paymentDetails);
+      setIsChecking(false);
+      router.push(`./paid_quizcode`);
     } else {
+      console.log("contract was never created!", balance);
       setRewardStatus("failed");
-      console.log("contract was never created!");
     }
   };
   return (
@@ -304,6 +254,9 @@ const WinningPage = () => {
                   setAmount(Number(e.target.value));
                 }}
               />
+              {approvalStatus && (
+                <p className="text-green-500 text-sm text-center mb-4">{approvalStatus}</p>
+              )}
               <div className="flex justify-center">
                 <div className="flex flex-col items-center">
                   <button
