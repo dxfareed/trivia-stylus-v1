@@ -6,6 +6,10 @@ TriviaBase is a Q & A platform, which can be use at Events, Communities ( online
 
 We're going for a name By the end of Q2. we would be called trib.
 
+## To claim $trib faucet to play 
+
+[Claim $trib faucet](https://trib-faucet.vercel.app/)
+
 ## TRIB
 
 trib will be the new era of triviabase, 
