@@ -9,6 +9,16 @@ const TRIVIA_BASE = "0x99FF0429a32a7cabfDC31918C27C1D685F7407aa"; // https://arb
 
 ```
 
+### Built with:
+
+Next.js – Used for the <a href ="https://github.com/dxfareed/trivia-stylus-v1/tree/master/src/app">frontend</a> to create a fast, responsive, and user-friendly interface.
+Ethers.js – Used to connect and interact with the smart contract.
+Node.js – Managed server-side logic and API endpoints on the backend.
+Arbitrum Stylus (Rust) – <a href ="https://github.com/dxfareed/trivia-stylus-v1/tree/master/src/sc/stylus">Smart contract</a> language.
+Firebase – Stores user profile, quiz questions, answers, and other game data while providing real time update for the Host and participants.
+
+
+
 <h3>How to use <a href="https://trivia-stylus.vercel.app/">TriviaBase</a> as host:</h3>
 
 <i>Claim <a href="https://trib-faucet.vercel.app/">$trib</a> token to interact with the platform</i>
