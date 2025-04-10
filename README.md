@@ -4,18 +4,23 @@ TriviaBase is a Q & A platform, which can be used at Events, Communities (online
 
 ```js
 // Deployed contracts on Arbiscan:
-const TRIVIA_BASE_TOKEN = "0xf0A806C38968DFfc952b6bEC73D7f9C669F22bC1"; // https://arbiscan.io/address/0xf0A806C38968DFfc952b6bEC73D7f9C669F22bC1
-const TRIVIA_BASE = "0x99FF0429a32a7cabfDC31918C27C1D685F7407aa"; // https://arbiscan.io/address/0x99FF0429a32a7cabfDC31918C27C1D685F7407aa
+const TRIVIA_BASE_TOKEN = "0xf0A806C38968DFfc952b6bEC73D7f9C669F22bC1";
+// https://sepolia.arbiscan.io/address/0xf0A806C38968DFfc952b6bEC73D7f9C669F22bC1
+const TRIVIA_BASE = "0x99FF0429a32a7cabfDC31918C27C1D685F7407aa";
+// https://sepolia.arbiscan.io/address/0x99FF0429a32a7cabfDC31918C27C1D685F7407aa
 
 ```
 
 ### Built with:
 
-Next.js – Used for the <a href ="https://github.com/dxfareed/trivia-stylus-v1/tree/master/src/app">frontend</a> to create a fast, responsive, and user-friendly interface.
-Ethers.js – Used to connect and interact with the smart contract.
-Node.js – Managed server-side logic and API endpoints on the backend.
-Arbitrum Stylus (Rust) – <a href ="https://github.com/dxfareed/trivia-stylus-v1/tree/master/src/sc/stylus">Smart contract</a> language.
-Firebase – Stores user profile, quiz questions, answers, and other game data while providing real time update for the Host and participants.
+| **Tech**                  | **Used for**                                                                                                                                                              |
+|---------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **Next.js**               | Used for the [frontend](https://github.com/dxfareed/trivia-stylus-v1/tree/master/src/app) to create a fast, responsive, and user-friendly interface.                  |
+| **Ethers.js**             | Connects and interacts with the smart contract, enabling seamless communication with blockchain networks.                                                                |
+| **Node.js**               | Manages server-side logic and API endpoints on the backend, ensuring efficient handling of requests and data processing.                                                  |
+| **Arbitrum Stylus (Rust)**| Utilized as the smart contract language for writing secure and efficient contracts, as shown in the [Smart contract](https://github.com/dxfareed/trivia-stylus-v1/tree/master/src/sc/stylus) repository. |
+| **Firebase**              | Stores user profiles, quiz questions, answers, and other game data; also provides real-time updates for the Host and participants during gameplay.                      |
+
 
 
 
